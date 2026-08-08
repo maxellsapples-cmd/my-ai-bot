@@ -4,6 +4,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 import aiohttp
 
+# Твой токен Telegram (не забудь сменить в BotFather, если бот забанится)
 TELEGRAM_TOKEN = "8999240956:AAFgn926seLAwCCmDpGrT5Tnks-qv7lv45s"
 
 bot = Bot(token=TELEGRAM_TOKEN)
@@ -27,8 +28,9 @@ async def handle_message(message: types.Message):
         "Отвечай честно, прямо и развернуто на русском языке."
     )
     
+    # Запрос к нейросети Llama 3
     payload = {
-        "model": "gpt-4o-mini", # Бесплатные шлюзы лучше всего держат эту модель или Llama-3
+        "model": "meta-llama/Meta-Llama-3-8B-Instruct",
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": message.text}
@@ -36,9 +38,9 @@ async def handle_message(message: types.Message):
     }
     
     try:
-        # Асинправный запрос через aiohttp, чтобы бот не лагал
+        # Используем aiohttp из твоего списка для быстрой работы без лагов
         async with aiohttp.ClientSession() as session:
-            # Используем стабильный бесплатный шлюз ИИ без ключей
+            # Свободный рабочий шлюз к моделям (работает без токенов)
             async with session.post("https://chigpt.ru", json=payload, timeout=30) as response:
                 if response.status == 200:
                     data = await response.json()
@@ -46,7 +48,7 @@ async def handle_message(message: types.Message):
                     await message.answer(answer)
                 else:
                     await message.answer("Акаме чет промолчал, попробуй еще раз.")
-                    print(f"Ошибка сервера: Статус {response.status}")
+                    print(f"Ошибка API: Статус {response.status}")
                     
     except Exception as e:
         await message.answer("Сайт лег ну или же акаме хуйню написал с гитхабом")
