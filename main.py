@@ -1,4 +1,4 @@
-import os
+ import os
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher, types
@@ -47,16 +47,19 @@ async def handle_message(message: types.Message):
 async def handle_index(request):
     return web.Response(text="OK")
 
-async def main():
-    logging.basicConfig(level=logging.INFO)
+async def start_bot_background(app):
     asyncio.create_task(dp.start_polling(bot))
+
+async def close_bot_background(app):
+    await bot.session.close()
+
+def main():
+    logging.basicConfig(level=logging.INFO)
     app = web.Application()
     app.router.add_get("/", handle_index)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", PORT)
-    await site.start()
-    await asyncio.Event().wait()
+    app.on_startup.append(start_bot_background)
+    app.on_cleanup.append(close_bot_background)
+    web.run_app(app, host="0.0.0.0", port=PORT)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
